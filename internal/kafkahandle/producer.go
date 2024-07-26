@@ -2,35 +2,10 @@ package kafkahandle
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
-
-func init() {
-	var err error
-
-	// Create Producer
-	Kafka.Producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": cfg["KAFKA_BOOTSTRAP_SERVERS"]})
-	if err != nil {
-		Log.Fatalf("Failed to create Kafka producer: %s\n", err)
-	}
-
-	// Set data from config
-	if Kafka.SendTimes, err = strconv.Atoi(cfg["KAFKA_SEND_TIMES"]); err != nil {
-		Log.Warnf("Failed to set KafkaSendTimes for producer (value set to default = 3): %s\n", err)
-		Kafka.SendTimes = 3
-	}
-	Log.Printf("Created Kafka Producer %v\n", Kafka.Producer)
-	Kafka.SendTimes, err = strconv.Atoi(cfg["KAFKA_SEND_TIMES"])
-	Kafka.TopicProduser = (cfg["KAFKA_TOPIC_PRODUCER"])
-	Kafka.TopicConsumer = (cfg["KAFKA_TOPIC_PRODUCER"])
-
-	// Run goroutine for receiving kafka event about sending messages
-	// go Run(Kafka)
-
-}
 
 func (kfk *KafkaData) SendMessage(message string, id int) {
 
@@ -65,6 +40,9 @@ func CreateKafkaProduser() {
 
 // Listen to all the events on the default events channel
 func (kfk *KafkaData) RunProducer() {
+
+	defer kfk.CloseProducer()
+
 	for e := range kfk.Producer.Events() {
 		switch ev := e.(type) {
 		case *kafka.Message:
@@ -97,7 +75,8 @@ func (kfk *KafkaData) RunProducer() {
 func (kfk *KafkaData) CloseProducer() {
 	// Flush and close the producer and the events channel
 	for kfk.Producer.Flush(10000) > 0 {
-		fmt.Print("Still waiting to flush outstanding messages\n")
+		Log.Info("Still waiting to flush outstanding messages\n")
 	}
 	kfk.Producer.Close()
+	Log.Info("kafka produser closed")
 }

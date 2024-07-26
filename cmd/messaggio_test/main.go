@@ -5,8 +5,8 @@ import (
 	server "github.com/kthucydi/bs_go_server" // http server
 	api "messaggio_test/internal/api"         // set Routes for server
 	config "messaggio_test/internal/config"   // get config data from .env and environment - .env priority is highter
-	kh "messaggio_test/internal/kafkahandle"
-	migrations "messaggio_test/migrations" // set migrations
+	kh "messaggio_test/internal/kafkahandle"  // init main kafka struct, create produser and consumer
+	migrations "messaggio_test/migrations"    // set migrations
 )
 
 func main() {

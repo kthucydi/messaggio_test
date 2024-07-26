@@ -83,9 +83,8 @@ func (config *ConfigStructure) initConfigBase() {
 		// "DAEMON_LOG_FILE_NAME": "",
 		"DAEMON_MODE":             "",
 		"KAFKA_BOOTSTRAP_SERVERS": "",
-		"KAFKA_TOPIC":             "",
-		"KAFKA_TOPIC_PRODUCER":    "messaggio-send",
-		"KAFKA_TOPIC_CONSUMER":    "messaggio-result",
+		"KAFKA_TOPIC_PRODUCER":    "",
+		"KAFKA_TOPIC_CONSUMER":    "",
 		"KAFKA_SEND_TIMES":        "",
 	}
 }
