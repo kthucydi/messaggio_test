@@ -2,7 +2,7 @@
 CREATE TABLE messages (
    id bigserial PRIMARY KEY, -- message ID
    message text NOT NULL, -- message body
-   processed BOOLEAN DEFAULT 0 -- processed flag
+   processed BOOLEAN DEFAULT FALSE -- processed flag
 );
 
 -- +goose Down

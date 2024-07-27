@@ -81,7 +81,6 @@ func (cfg *ConfigData) loadEnv(fileName string) {
 
 // migration flags handler
 func (cfg *ConfigData) migrationFlagHandle() {
-	//Flags and args handle
 
 	// Set default for validating
 	(*cfg)["MIGRATIONS"]["WITHOUT_MIGRATIONS"] = "false"

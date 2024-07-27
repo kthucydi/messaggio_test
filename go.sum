@@ -194,6 +194,8 @@ github.com/klauspost/compress v1.17.7 h1:ehO88t2UGzQK66LMdE8tibEd1ErmzZjNEqWkjLA
 github.com/klauspost/compress v1.17.7/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
 github.com/kthucydi/bs_go_daemon v0.0.0-20240726065247-4cd8053557ce h1:uE5o7Yzjgm8g/2woE54TDI0B7k27fiuMEWHYw0y1gtc=
 github.com/kthucydi/bs_go_daemon v0.0.0-20240726065247-4cd8053557ce/go.mod h1:ZfneqY+GGJ5FY4lpnZ16EgM3sd62cqBM3LJFil61MOI=
+github.com/kthucydi/bs_go_daemon v0.0.0-20240727183554-acb9245e257a h1:AgC03pHTvKi5kaKaBOl7TGmkp+qgAvS16c8C8PjKrgU=
+github.com/kthucydi/bs_go_daemon v0.0.0-20240727183554-acb9245e257a/go.mod h1:ZfneqY+GGJ5FY4lpnZ16EgM3sd62cqBM3LJFil61MOI=
 github.com/kthucydi/bs_go_logrus v0.1.0 h1:HQT0ld9pwBD+j6K/Du4gysXCIdmCPPSyiV7Ak9U0/jY=
 github.com/kthucydi/bs_go_logrus v0.1.0/go.mod h1:zQvCaQ4j79LCEpu9/cdOVWnbyWugLsQIBiVgrP6V2Uc=
 github.com/kthucydi/bs_go_server v0.1.1 h1:UPqRNcP1cpeFfY/vWSWzleP1Nhr7f2hBBiLrN1fPQmo=

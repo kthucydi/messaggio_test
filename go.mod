@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/kthucydi/bs_go_daemon v0.0.0-20240726065247-4cd8053557ce
+	github.com/kthucydi/bs_go_daemon v0.0.0-20240727183554-acb9245e257a
 	github.com/kthucydi/bs_go_logrus v0.1.0
 	github.com/kthucydi/bs_go_server v0.1.1
 	github.com/pressly/goose/v3 v3.21.1
