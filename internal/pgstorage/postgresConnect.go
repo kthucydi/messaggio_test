@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	pgxscan "github.com/georgysavva/scany/v2/pgxscan"
+	// pgx "github.com/jackc/pgx/v5"
 	pgxpool "github.com/jackc/pgx/v5/pgxpool"
 	logging "github.com/kthucydi/bs_go_logrus"
 	config "messaggio_test/internal/config"
@@ -57,6 +59,54 @@ func MessageCreate(message string) (id int64, err error) {
 	return
 }
 
-// var name string
-// var weight int64
-// err := conn.QueryRow("select name, weight from widgets where id=$1", 42).Scan(&name, &weight)
+type Statistic struct {
+	All       int64 `db:"all_messages" json:"all_messages"`
+	Processed int64 `db:"processed_messages" json:"processed_messages"`
+}
+
+func GetStatistic() (*Statistic, error) {
+	stmt := `SELECT ( SELECT COUNT(*) FROM messages ) as all_messages, 
+			( SELECT COUNT(*) FROM messages 
+			WHERE processed = true) as processed_messages;`
+	stat := &Statistic{}
+
+	err := pgxscan.Get(context.TODO(), PGDB, stat, stmt)
+	if err != nil {
+		Log.Errorf("postgres database error during Read Statistic process: %v ", err)
+	}
+
+	Log.Infof("stat getting success: %v", stat)
+	return stat, err
+}
+
+func UpdateProcessed(array []int) error {
+	stmt := `UPDATE messages SET processed = true
+			WHERE id = ANY ($1) AND processed = false;`
+	array = []int{4, 5, 2} // ARRAY!!!
+	// stmt := `UPDATE messages SET processed = true
+	// 		WHERE id = ANY (@ids) AND processed = false;`
+	// array := []int{4, 3, 2, 1}
+
+	// batch := &pgx.Batch{}
+	// args := pgx.NamedArgs{"ids": array}
+	// batch.Queue(stmt, args)
+
+	// results := PGDB.SendBatch(context.TODO(), batch)
+	// _, err := results.Exec()
+	// if err != nil {
+	// 	Log.Errorf("postgres database error during update processed flag: %v ", err)
+	// 	return err
+	// }
+	// defer results.Close()
+	_, err := PGDB.Exec(context.TODO(), stmt, array)
+	if err != nil {
+		Log.Errorf("postgres database error during update processed flag: %v ", err)
+	}
+
+	Log.Info("update processed success")
+	return err
+}
+
+// UPDATE messages
+// SET processed = true
+// WHERE id = ANY (ARRAY[1,6]) AND processed = false;

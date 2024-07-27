@@ -5,9 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
-
-	gmux "github.com/gorilla/mux"
 )
 
 const (
@@ -23,7 +20,7 @@ func SetHeaders(w *http.ResponseWriter, cors bool, status int, contentType strin
 	if cors {
 		(*w).Header().Set("Access-Control-Allow-Origin", "*")
 		(*w).Header().Set("Access-Control-Allow-Methods", "POST, PUT, GET, DELETE")
-		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Authorization")
 	}
 
 	(*w).WriteHeader(status)
@@ -42,37 +39,6 @@ func CreateJsonMessage(msg string, error bool) []byte {
 		data = []byte("error during create message")
 	}
 	return data
-}
-
-func getIDFromURL(r *http.Request) (id int, err error) {
-
-	if idString := r.URL.Query().Get("id"); idString != "" {
-		id, err = strconv.Atoi(idString)
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		return -1, nil
-	}
-	return id, nil
-}
-
-func getUIntPathParams(paramName string, r *http.Request) (paramValue int, err error) {
-	pathParams := gmux.Vars(r)
-
-	if value, ok := pathParams[paramName]; ok {
-		paramValue, err = strconv.Atoi(value)
-		if err != nil || paramValue < 0 {
-			return -1, fmt.Errorf("error, %s incorrect", paramName)
-		}
-	}
-	return
-}
-
-func ResponceCORSAllowed(w http.ResponseWriter, r *http.Request) {
-	// SetHeaders(&w, CORSAllow, 200, "application/json")
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(CreateJsonMessage("CORS allowed", false)))
 }
 
 func CreateJSONMessageResponse(w *http.ResponseWriter, status int, message string, errbool bool) {
