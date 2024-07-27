@@ -7,13 +7,14 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-func (kfk *KafkaData) SendMessage(message string, id int) {
+func (kfk *KafkaData) SendMessage(message string, id int64) {
 
 	for i := 0; i < kfk.SendTimes; i++ {
 		err := kfk.Producer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &kfk.TopicProduser, Partition: kafka.PartitionAny},
+			Key:            []byte(fmt.Sprint(id)),
 			Value:          []byte(message),
-			Headers:        []kafka.Header{{Key: "id", Value: []byte(fmt.Sprint("987"))}},
+			Headers:        []kafka.Header{{Key: "id", Value: []byte(fmt.Sprint(id))}},
 		}, nil)
 
 		if err != nil {
@@ -30,11 +31,13 @@ func (kfk *KafkaData) SendMessage(message string, id int) {
 	}
 }
 
-func CreateKafkaProduser() {
+func (kfk *KafkaData) createProduser() {
 	var err error
-	Kafka.Producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": cfg["KAFKA_BOOTSTRAP_SERVERS"]})
+	kfk.Producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": cfg["KAFKA_BOOTSTRAP_SERVERS"]})
 	if err != nil {
-		Log.Fatalf("Failed to create Kafka producer: %s\n", err)
+		Log.Fatalf("Failed to create Kafka producer: %v\n", err)
+	} else {
+		Log.Info("Created Kafka Producer")
 	}
 }
 

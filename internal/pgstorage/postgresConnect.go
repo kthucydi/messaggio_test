@@ -5,29 +5,40 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"messaggio_test/internal/config"
+	pgxpool "github.com/jackc/pgx/v5/pgxpool"
+	logging "github.com/kthucydi/bs_go_logrus"
+	config "messaggio_test/internal/config"
 )
 
-var cfg = config.Cfg.DBConnectionData
+var Log = &logging.Log
+var PGDB *pgxpool.Pool
+var configDB = (*config.Cfg)["DB_CONN"]
 
 // init function create connect to DB
 func init() {
 	var err error
 
-	Log.Debug("pgxconn: ", cfg["PGX_CONN"])
-	PGDB.Database, err = pgxpool.New(context.Background(), cfg["PGX_CONN"])
+	pgxConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		configDB["POSTGRES_USER"],
+		configDB["POSTGRES_PASSWORD"],
+		configDB["POSTGRES_HOST"],
+		configDB["POSTGRES_PORT"],
+		configDB["POSTGRES_DATABASE"])
+
+	Log.Debugf("pgxconn: %s", pgxConn)
+
+	PGDB, err = pgxpool.New(context.Background(), pgxConn)
 	if err != nil {
 		Log.Fatalf("database init failed: %v", err)
 	}
-	Log.Print("postgress database connection successfull")
-	Log.Debugf("FROM postgresConnect GetNow: %s", fmt.Sprint(PGDB.GetNow()))
+	Log.Info("postgress database connection successfull")
+	Log.Debugf("FROM postgresConnect GetNow: %s", fmt.Sprint(GetNow(PGDB)))
 }
 
-func (PGDB DB) GetNow() (string, error) {
+func GetNow(PGDB *pgxpool.Pool) (string, error) {
 	var time time.Time
 
-	err := PGDB.Database.QueryRow(context.Background(), "select NOW()").Scan(&time)
+	err := PGDB.QueryRow(context.Background(), "select NOW()").Scan(&time)
 	if err != nil {
 		Log.Error("can not receive responce from db:", err)
 		return "", err
@@ -35,70 +46,17 @@ func (PGDB DB) GetNow() (string, error) {
 	return time.String(), err
 }
 
-// // init function create connect to DB
-// func init() {
-// 	var err error
+func MessageCreate(message string) (id int64, err error) {
+	stmt := `INSERT INTO messages (message) VALUES ($1) RETURNING id`
 
-// 	if PGDB.dataConnect, err = getConnectionData(); err != nil {
-// 		Log.Errorf("database init failed: %v", err)
-// 		os.Exit(1)
-// 	}
+	err = PGDB.QueryRow(context.TODO(), stmt, message).Scan(&id)
+	if err != nil {
+		Log.Errorf("postgres database error during writeMessage process: %v ", err)
+	}
+	Log.Infof("message id=%d inserted to DB", id)
+	return
+}
 
-// 	Log.Debug("pgxconn: ", PGDB.dataConnect["pgxconn"])
-// 	PGDB.Database, err = pgxpool.New(context.Background(), PGDB.dataConnect["pgxconn"])
-// 	if err != nil {
-// 		Log.Errorf("database init failed: %v", err)
-// 		os.Exit(1)
-// 	}
-// 	Log.Print("postgress database connection successfull")
-// 	Log.Debugf("FROM postgresConnect GetNow: %s", fmt.Sprint(PGDB.GetNow()))
-// }
-
-// // getConnectionData load connection data from file or environment
-// func getConnectionData() (dataConnect map[string]string, err error) {
-// 	configFile := os.Getenv("CONFIG_FILE")
-// 	if err := godotenv.Load(configFile); err != nil {
-// 		Log.Warningf("postgres config file %s not found", configFile)
-// 	}
-// 	Log.Debugf("postgres config file %s loaded", configFile)
-
-// 	// Fill struct with nessesory variable
-// 	dataConnect = make(map[string]string)
-// 	dataConnect["PGHOST"] = os.Getenv("PGHOST")
-// 	dataConnect["PGPORT"] = os.Getenv("PGPORT")
-// 	dataConnect["PGUSER"] = os.Getenv("PGUSER")
-// 	dataConnect["PGPASSWORD"] = os.Getenv("PGPASSWORD")
-// 	dataConnect["PGDATABASE"] = os.Getenv("PGDATABASE")
-
-// 	Log.Debugf("postgres config file %s copyed", configFile)
-
-// 	// Check exist all nessesory variable for connection
-// 	for key, value := range PGDB.dataConnect {
-// 		if value == "" {
-// 			Log.Printf("env variable %s not exported", key)
-// 			return dataConnect, errors.New("Cannot get nessesory environment variable")
-// 		}
-// 	}
-// 	Log.Debugf("postgres config file %s valid", configFile)
-
-// 	// Create connection string
-// 	dataConnect["pgxconn"] = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-// 		dataConnect["PGUSER"],
-// 		dataConnect["PGPASSWORD"],
-// 		dataConnect["PGHOST"],
-// 		dataConnect["PGPORT"],
-// 		dataConnect["PGDATABASE"])
-
-// 	return
-// }
-
-// func (PGDB DB) GetNow() (string, error) {
-// 	var time time.Time
-
-// 	err := PGDB.Database.QueryRow(context.Background(), "select NOW()").Scan(&time)
-// 	if err != nil {
-// 		Log.Error("can not receive responce from db:", err)
-// 		return "", err
-// 	}
-// 	return time.String(), err
-// }
+// var name string
+// var weight int64
+// err := conn.QueryRow("select name, weight from widgets where id=$1", 42).Scan(&name, &weight)

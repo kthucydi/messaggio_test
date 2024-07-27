@@ -5,7 +5,9 @@ package migrations
 import (
 	"context"
 	"embed"
+	"fmt"
 	"os"
+	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -17,17 +19,10 @@ import (
 var embedFS embed.FS
 var Log = &logging.Log
 
-type Data struct {
-	Only    bool
-	Exit    bool
-	Command string
-	Args    []string
-}
-
-func Run(migrationData Data, DBData map[string]string) {
+func Run(mgCfg map[string]string, DBData map[string]string) {
 
 	// Check for migration necessity
-	if migrationData.Exit {
+	if mgCfg["WITHOUT_MIGRATIONS"] == "true" {
 		Log.Info("goose: run without migration")
 		return
 	}
@@ -40,28 +35,39 @@ func Run(migrationData Data, DBData map[string]string) {
 	goose.SetLogger(Log)
 
 	//connect to DB
-	db, err := goose.OpenDBWithDriver("pgx", DBData["pgxconn"])
+	pgxConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		DBData["POSTGRES_USER"],
+		DBData["POSTGRES_PASSWORD"],
+		DBData["POSTGRES_HOST"],
+		DBData["POSTGRES_PORT"],
+		DBData["POSTGRES_DATABASE"])
+
+	Log.Debug("migration pgxConn: ", pgxConn)
+
+	db, err := goose.OpenDBWithDriver("pgx", pgxConn)
 	if err != nil {
 		Log.Errorf("goose error: failed to open DB: %v\n", err)
 	} else {
-		Log.Infof("goose connection to postgress database %s successfull", DBData["dbPGStringPath"])
+		Log.Infof("goose connection to postgress database %s successfull", DBData["POSTGRES_DATABASE"])
 	}
 
 	// close DB on exit
 	defer func() {
 		if err := db.Close(); err != nil {
-			Log.Errorf("goose error: failed to close DB at %s: %v\n", DBData["dbPGStringPath"], err)
+			Log.Errorf("goose error: failed to close DB %s: %v\n", DBData["POSTGRES_DATABASE"], err)
 		}
 	}()
 
 	//Run goose migrations command
-	if err := goose.RunContext(context.Background(), migrationData.Command, db, dir, migrationData.Args...); err != nil {
-		Log.Errorf("goose error: command:%v: %v", migrationData.Command, err)
+	args := strings.Split(mgCfg["MIGRATIONS_ARGS"], ";")
+	err = goose.RunContext(context.Background(), mgCfg["MIGRATIONS_COMMAND"], db, dir, args...)
+	if err != nil {
+		Log.Errorf("goose error: command:%v: %v", mgCfg["MIGRATIONS_COMMAND"], err)
 	}
 
 	// Exit from program if we need only migrations without running program
-	if migrationData.Only {
-		Log.Printf("Exit by flag 'm-only'")
+	if mgCfg["MIGRATIONS_ONLY"] == "true" {
+		Log.Infof("Exit by flag 'm-only'")
 		os.Exit(0)
 	}
 }

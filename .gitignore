@@ -22,3 +22,12 @@ go.work
 go.work.sum
 build
 
+# Old files
+*_old
+
+#.config with data
+.env
+
+# logs
+logs
+.log

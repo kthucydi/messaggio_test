@@ -5,12 +5,13 @@ import (
 
 	gmux "github.com/gorilla/mux"
 	server "github.com/kthucydi/bs_go_server"
+	pgstorage "messaggio_test/internal/pgstorage"
 )
 
 var API *ApiRoutes
 
 func init() {
-	Log.Debugf("FROM API GetNow:%s ", fmt.Sprint(PG.GetNow()))
+	Log.Debugf("FROM API GetNow:%s ", fmt.Sprint(pgstorage.GetNow(pgstorage.PGDB)))
 	API = &ApiRoutes{}
 
 	API.CommonMiddleware = map[string]gmux.MiddlewareFunc{}
@@ -18,17 +19,13 @@ func init() {
 	API.Routes = make(map[string]Methods)
 
 	API.Routes["/"] = Methods{
-		"Post": Route{Name: "basicListener", Auth: "", Handler: messageHandler},
+		"POST": Route{Name: "basicListener", Auth: "", Handler: messageHandler},
 	}
-
 	API.Routes["/status"] = Methods{
-		"Post": Route{Name: "basicListener", Auth: "", Handler: serverStatus},
+		"GET": Route{Name: "basicListener", Auth: "", Handler: statusHandler},
 	}
-
 	API.Routes["/getstat"] = Methods{
 		"GET": Route{Name: "requestCodeToEmail", Auth: "", Handler: statHandler},
-		// 		Middlewares: []gmux.MiddlewareFunc{mw.Jwt.Handler}},
-
 	}
 }
 

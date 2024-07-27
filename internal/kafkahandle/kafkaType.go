@@ -12,7 +12,7 @@ var (
 	PG    = &pgstorage.PGDB
 	Log   = &logging.Log
 	Kafka = &KafkaData{}
-	cfg   = config.Cfg.Kafka
+	cfg   = (*config.Cfg)["KAFKA"]
 )
 
 type KafkaData struct {

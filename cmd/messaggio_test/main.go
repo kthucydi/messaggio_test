@@ -9,9 +9,11 @@ import (
 	migrations "messaggio_test/migrations"    // set migrations
 )
 
+var cfg = *config.Cfg
+
 func main() {
-	migrations.Run(config.Cfg.Migration, config.Cfg.DBConnectionData)
+	migrations.Run(cfg["MIGRATIONS"], cfg["DB_CONN"])
 	go kh.Kafka.RunProducer()
 	go kh.Kafka.RunConsumer()
-	server.BackServer.Run(config.Cfg.Data, api.API)
+	server.BackServer.Run(cfg["SERVER"], api.API)
 }
