@@ -2,6 +2,7 @@ BINARY_NAME = messaggio_test
 IMAGE_NAME = backend_image
 CONTAINER_NAME = backend_container
 FILE_WITH_ENV = ".env"
+SHELL := /bin/bash
 # GO = go
 GO = go1.21.5
 
@@ -9,10 +10,36 @@ GO = go1.21.5
 
 #ARGS get in command string, example: make runbin ARGS="-m up -m-only"
 
+up:
+	docker compose up -d
+	@echo wait for starting images...
+# @sleep 10s
+# @echo Create kafka topics:
+# @docker-compose exec kafka kafka-topics \
+# --create --topic messaggio --partitions 1 \
+# --replication-factor 1 --bootstrap-server kafka:29092
+# @docker-compose exec kafka kafka-topics \
+# --create --topic messaggio-back --partitions 1 \
+# --replication-factor 1 --bootstrap-server kafka:29092
+
+docker-build: build
+	docker build --tag mes1 .
+
+down:
+	docker compose down
+
 run:
+#@kafka-topics.sh --create --topic messaggio-back --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server localhost:9092
+#@kafka-topics.sh --create --topic messaggio-back --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server localhost:9092
 	@${GO} version
 	@${GO} run ./cmd/${BINARY_NAME}/main.go
 
+interrupt-main:
+	pkill -2 main
+
+interrupt-bin:
+	pkill -2 ${BINARY_NAME}
+	
 # run: gen
 # 	@${GO} version
 # 	@${GO} run ./cmd/${BINARY_NAME}/main.go

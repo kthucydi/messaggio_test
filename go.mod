@@ -8,14 +8,13 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/kthucydi/bs_go_daemon v0.0.0-20240727183554-acb9245e257a
+	github.com/kthucydi/bs_go_daemon v0.0.0-20240729112235-4dbf7fc232d5
 	github.com/kthucydi/bs_go_logrus v0.1.0
-	github.com/kthucydi/bs_go_server v0.1.1
+	github.com/kthucydi/bs_go_server v0.1.3-0.20240728182913-1a9b8b2d0bde
 	github.com/pressly/goose/v3 v3.21.1
 )
 
 require (
-	dev.azure.com/PluhSoft/Office/_git/ps-go-logger.git v0.1.0 // indirect
 	github.com/auth0/go-jwt-middleware v1.0.1 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

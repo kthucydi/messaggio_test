@@ -1,6 +1,7 @@
 package kafkahandle
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -37,7 +38,28 @@ func (kfk *KafkaData) createProduser() {
 	if err != nil {
 		Log.Fatalf("Failed to create Kafka producer: %v\n", err)
 	} else {
-		Log.Info("Created Kafka Producer")
+		Log.Info("created kafka producer")
+	}
+
+	adm, err := kafka.NewAdminClientFromProducer(kfk.Producer)
+	if err != nil {
+		Log.Info("can not create AdminClientFromProducer")
+		return
+	}
+	_, err = adm.CreateTopics(context.Background(), []kafka.TopicSpecification{
+		{
+			Topic:             "messaggio-back",
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		},
+		{
+			Topic:             "messaggio",
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		},
+	})
+	if err != nil {
+		Log.Infof("can not create topic messaggio-back: %v", err)
 	}
 }
 
