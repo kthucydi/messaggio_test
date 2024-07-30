@@ -1,2 +1,2 @@
 # messaggio_test
-test example for hr
+example programm for messaggio

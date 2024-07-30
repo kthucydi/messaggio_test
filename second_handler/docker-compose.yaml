@@ -1,0 +1,106 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - messaggio
+
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    container_name: kafka
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: LISTENER://kafka1:29092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER://kafka1:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - messaggio
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - 8090:8080
+    restart: always
+    environment:
+      KAFKA_CLUSTERS_0_NAME: messaggio
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - messaggio
+    links:
+      - kafka1
+      - zookeeper
+
+  messaggio_microservice:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mes
+    depends_on:
+    - kafka1
+    - postgres1
+    ports:
+      - "8050:8050"
+    networks:
+      - messaggio
+    volumes:
+      - /home/anton/logs:/app/logs
+    links:
+      - kafka1
+      - kafka-ui
+      - postgres1
+      - zookeeper
+
+  postgres1:
+    image: postgres:14.8-alpine3.18
+    container_name: pg
+    environment:
+      POSTGRES_DB: "messaggio_db"
+      POSTGRES_USER: "anton"
+      POSTGRES_PASSWORD: "12345"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - messaggio-data:/var/lib/postgresql/data
+    ports:
+      - "5531:5432"
+    networks:
+      - messaggio
+
+volumes:
+  messaggio-data:
+
+networks:
+  messaggio:
+    driver: bridge
+
+  # producer:
+  #   build:
+  #     context: .
+  #     dockerfile: producer/Dockerfile
+  #   ports:
+  #     - 8080:8080
+  #   links:
+  #     - kafka-ui
+
+  # consumer:
+  #   build:
+  #     context: .
+  #     dockerfile: consumer/Dockerfile
+  #   ports:
+  #     - 8081:8080
+  #   links:
+  #     - kafka-ui
